@@ -501,3 +501,22 @@ footer {
   height: 1px;
   background-color: rgba(201, 168, 76, 0.15);
 }
+
+/* ────────────────────────────────────── PROFILE PAGE ─────────────────────────────────────── */
+
+.h2-title {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 2.5rem;
+  letter-spacing: 0.1rem;
+  color: #f0ece0;
+}
+.h2-title span {
+  color: var(--rh-gold);
+}
+
+.profile-section {
+  padding-bottom: 1rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--rh-border);
+}
