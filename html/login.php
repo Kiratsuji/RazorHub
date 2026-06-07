@@ -123,7 +123,7 @@
           <div class="mb-3">
             <div class="d-flex justify-content-between align-items-center mb-1">
               <label for="senha" class="form-label mb-0">Senha</label>
-              <a href="esqueci-senha.html" class="rh-link" style="font-size: 0.78rem">
+              <a href="esqueci-senha.php" class="rh-link" style="font-size: 0.78rem">
                 Esqueci minha senha
               </a>
             </div>
