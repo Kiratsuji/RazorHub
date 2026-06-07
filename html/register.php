@@ -100,7 +100,7 @@
         <?php if ($success): ?>
           <!-- Feedback de sucesso -->
           <div class="alert alert-success" role="alert">
-            Conta criada com sucesso! <a href="login.html" class="alert-link">Faça login</a>.
+            Conta criada com sucesso! <a href="login.php" class="alert-link">Faça login</a>.
           </div>
         <?php else: ?>
 
@@ -219,7 +219,7 @@
 
           <p class="text-center mb-0" style="font-size: 0.9rem; color: #7a776e">
             Já tem uma conta?
-            <a href="login.html" class="rh-link ms-1">Fazer login</a>
+            <a href="login.php" class="rh-link ms-1">Fazer login</a>
           </p>
 
         <?php endif; ?>

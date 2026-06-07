@@ -52,7 +52,7 @@
         <div class="container">
           <a class="navbar-brand" href="#">RazorHub</a>
           <div class="d-flex gap-2">
-            <a href="login.html" class="btn btn-ghost btn-sm px-3 py-2"
+            <a href="login.php" class="btn btn-ghost btn-sm px-3 py-2"
               >Login</a
             >
             <a href="register.php" class="btn btn-gold btn-sm px-3 py-2"
@@ -86,7 +86,7 @@
                 <a href="register.php" class="btn btn-gold px-4 py-2"
                   >Registrar agora</a
                 >
-                <a href="login.html" class="btn btn-ghost px-4 py-2"
+                <a href="login.php" class="btn btn-ghost px-4 py-2"
                   >Já tenho conta</a
                 >
               </div>
@@ -154,7 +154,7 @@
           <a href="register.php" class="btn btn-gold px-5 py-2 me-2"
             >Criar conta</a
           >
-          <a href="login.html" class="btn btn-ghost px-5 py-2">Fazer login</a>
+          <a href="login.php" class="btn btn-ghost px-5 py-2">Fazer login</a>
         </div>
       </section>
     </main>
