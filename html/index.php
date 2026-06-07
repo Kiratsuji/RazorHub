@@ -1,3 +1,12 @@
+<?php
+    require_once("config/database.php");
+   
+    //Se já estiver logado, redirecione ao dashboard(Tela inicial pós login)
+    if (isset($_SESSION["user_id"])) {
+        header("Location: dashboard.php");
+        exit();
+    }
+?>
 <!doctype html>
 <html lang="pt-BR" data-bs-theme="dark">
   <head>
@@ -46,7 +55,7 @@
             <a href="login.html" class="btn btn-ghost btn-sm px-3 py-2"
               >Login</a
             >
-            <a href="register.html" class="btn btn-gold btn-sm px-3 py-2"
+            <a href="register.php" class="btn btn-gold btn-sm px-3 py-2"
               >Registrar</a
             >
           </div>
@@ -74,7 +83,7 @@
                 conhecer.
               </p>
               <div class="d-flex flex-wrap gap-3">
-                <a href="register.html" class="btn btn-gold px-4 py-2"
+                <a href="register.php" class="btn btn-gold px-4 py-2"
                   >Registrar agora</a
                 >
                 <a href="login.html" class="btn btn-ghost px-4 py-2"
@@ -142,7 +151,7 @@
           >
             Crie sua conta gratuitamente e garanta seu lugar na cadeira.
           </p>
-          <a href="register.html" class="btn btn-gold px-5 py-2 me-2"
+          <a href="register.php" class="btn btn-gold px-5 py-2 me-2"
             >Criar conta</a
           >
           <a href="login.html" class="btn btn-ghost px-5 py-2">Fazer login</a>
