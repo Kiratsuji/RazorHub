@@ -67,7 +67,7 @@
     <header>
         <nav class="navbar navbar-expand-lg">
             <div class="container">
-                <a class="navbar-brand" href="#">RazorHub</a>
+                <a class="navbar-brand" href="inicio.php">RazorHub</a>
             </div>
         </nav>
     </header>
@@ -144,7 +144,7 @@
                     </div>
 
                     <button type="submit" class="btn btn-gold">Confirmar</button>
-                    <a href="dashboard.php" class="btn btn-outline-secondary ms-2">Cancelar</a>
+                    <a href="inicio.php" class="btn btn-outline-secondary ms-2">Cancelar</a>
 
                 </form>
 
