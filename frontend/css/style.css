@@ -1,0 +1,202 @@
+/* ────────────── VARIÁVEIS GLOBAIS ────────────── */
+:root {
+  --rh-gold: #c9a84c;
+  --rh-gold-dim: #9e7a2f;
+  --rh-dark: #0d0d0d;
+  --rh-surface: #161616;
+  --rh-border: rgba(201, 168, 76, 0.25);
+}
+
+/* ────────────── BASE / GLOBAL ────────────── */
+body {
+  font-family: "Barlow", sans-serif;
+  background-color: var(--rh-dark);
+  color: #d4d0c8;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.navbar {
+  background-color: rgba(13, 13, 13, 0.92) !important;
+  border-bottom: 1px solid var(--rh-border);
+  backdrop-filter: blur(8px);
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+.navbar-brand {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 2rem;
+  letter-spacing: 0.1em;
+  color: var(--rh-gold) !important;
+}
+
+.btn-gold {
+  background-color: var(--rh-gold);
+  color: #0d0d0d;
+  font-weight: 600;
+  border: none;
+  border-radius: 2px;
+  letter-spacing: 0.05em;
+  font-size: 0.85rem;
+}
+.btn-gold:hover {
+  background-color: var(--rh-gold-dim);
+  color: #0d0d0d;
+}
+
+.btn-ghost {
+  border: 1px solid var(--rh-gold);
+  color: var(--rh-gold);
+  border-radius: 2px;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  background: transparent;
+}
+.btn-ghost:hover {
+  background-color: var(--rh-gold);
+  color: #0d0d0d;
+}
+
+.hero {
+  min-height: 90vh;
+  display: flex;
+  align-items: center;
+  background-color: var(--rh-dark);
+  background-image:
+    linear-gradient(
+      to right,
+      rgba(13, 13, 13, 0.97) 45%,
+      rgba(13, 13, 13, 0.6) 100%
+    ),
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 40px,
+      rgba(201, 168, 76, 0.03) 40px,
+      rgba(201, 168, 76, 0.03) 41px
+    );
+  border-bottom: 1px solid var(--rh-border);
+  position: relative;
+  overflow: hidden;
+}
+.hero::after {
+  content: "RH";
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 28vw;
+  color: rgba(201, 168, 76, 0.03);
+  position: absolute;
+  right: -2vw;
+  bottom: -4vw;
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+}
+.hero-eyebrow {
+  font-size: 0.75rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--rh-gold);
+  font-weight: 600;
+}
+.hero-title {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: clamp(3.5rem, 8vw, 7rem);
+  line-height: 0.95;
+  letter-spacing: 0.04em;
+  color: #f0ece0;
+}
+.hero-title span {
+  color: var(--rh-gold);
+}
+.hero-lead {
+  font-weight: 300;
+  font-size: 1.05rem;
+  color: #9a9590;
+  max-width: 480px;
+  line-height: 1.7;
+}
+.hero-divider {
+  width: 48px;
+  height: 2px;
+  background-color: var(--rh-gold);
+  border: none;
+  opacity: 1;
+}
+
+.section-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--rh-gold);
+  font-weight: 600;
+}
+.section-title {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+  letter-spacing: 0.06em;
+  color: #f0ece0;
+}
+.service-card {
+  background-color: var(--rh-surface);
+  border: 1px solid var(--rh-border);
+  border-radius: 2px;
+  padding: 2rem 1.5rem;
+  transition:
+    border-color 0.25s,
+    transform 0.25s;
+  height: 100%;
+}
+.service-card:hover {
+  border-color: var(--rh-gold);
+  transform: translateY(-4px);
+}
+.service-icon {
+  font-size: 1.6rem;
+  color: var(--rh-gold);
+  margin-bottom: 1rem;
+  display: block;
+}
+.service-card h5 {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 1.3rem;
+  letter-spacing: 0.08em;
+  color: #f0ece0;
+}
+.service-card p {
+  font-size: 0.9rem;
+  color: #7a776e;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.cta-section {
+  background-color: var(--rh-surface);
+  border-top: 1px solid var(--rh-border);
+  border-bottom: 1px solid var(--rh-border);
+}
+.cta-title {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  letter-spacing: 0.06em;
+  color: #f0ece0;
+}
+
+footer {
+  background-color: #080808;
+  border-top: 1px solid var(--rh-border);
+}
+.footer-brand {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 1.6rem;
+  letter-spacing: 0.1em;
+  color: var(--rh-gold);
+}
+.footer-copy {
+  font-size: 0.8rem;
+  color: #4a4840;
+  letter-spacing: 0.04em;
+}
