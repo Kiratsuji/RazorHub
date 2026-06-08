@@ -72,7 +72,8 @@
       integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
       crossorigin="anonymous"
     />
-    <link href="../css/style.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link href="css/style.css" rel="stylesheet" />
 
     <link rel="icon" type="image/png" href="assets/images/favicon/favicon-96x96.png" sizes="96x96" />
     <link rel="icon" type="image/svg+xml" href="assets/images/favicon/favicon.svg" />
@@ -171,28 +172,38 @@
 
             <div class="mb-3">
               <label for="senha" class="form-label">Senha</label>
-              <input
-                type="password"
-                id="senha"
-                name="senha"
-                class="form-control"
-                placeholder="Mín. 8 caracteres"
-                autocomplete="new-password"
-                required
-              />
+              <div class="input-group">
+                <input
+                  type="password"
+                  id="senha"
+                  name="senha"
+                  class="form-control"
+                  placeholder="Mín. 8 caracteres"
+                  autocomplete="new-password"
+                  required
+                />
+                <button type="button" class="btn btn-outline-secondary toggle-senha" data-target="senha" tabindex="-1">
+                  <i class="bi bi-eye"></i>
+                </button>
+              </div>
             </div>
 
             <div class="mb-4">
               <label for="confirmar-senha" class="form-label">Confirmar senha</label>
-              <input
-                type="password"
-                id="confirmar-senha"
-                name="confirmar_senha"
-                class="form-control"
-                placeholder="Repita a senha"
-                autocomplete="new-password"
-                required
-              />
+              <div class="input-group">
+                <input
+                  type="password"
+                  id="confirmar-senha"
+                  name="confirmar_senha"
+                  class="form-control"
+                  placeholder="Repita a senha"
+                  autocomplete="new-password"
+                  required
+                />
+                <button type="button" class="btn btn-outline-secondary toggle-senha" data-target="confirmar-senha" tabindex="-1">
+                  <i class="bi bi-eye"></i>
+                </button>
+              </div>
             </div>
 
             <div class="form-check mb-4">
@@ -238,5 +249,19 @@
       integrity="sha384-YUe2LzesAfRqEkBRFTkMoPNmQhkGIl+e+0gDsAk51nV+oHnTBBW8OxkIGIVDCk3"
       crossorigin="anonymous"
     ></script>
+    
+    <script>
+      // Função para mostrar/ocultar senha
+      document.querySelectorAll('.toggle-senha').forEach(btn => {
+          btn.addEventListener('click', () => {
+              const input = document.getElementById(btn.dataset.target);
+              const icon  = btn.querySelector('i');
+              const mostrar = input.type === 'password';
+              
+              input.type      = mostrar ? 'text' : 'password';
+              icon.className  = mostrar ? 'bi bi-eye-slash' : 'bi bi-eye';
+          });
+      });
+    </script>
   </body>
 </html>

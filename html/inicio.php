@@ -21,7 +21,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="css/style.css" />
     <link rel="icon" type="image/png" href="assets/images/favicon/favicon-96x96.png" sizes="96x96" />
     <link rel="icon" type="image/svg+xml" href="assets/images/favicon/favicon.svg" />
     <link rel="shortcut icon" href="assets/images/favicon/favicon.ico" />
@@ -74,7 +74,7 @@
 
     <!-- ── Conteúdo ── -->
     <main class="rh-wrapper">
-        <a href="novo-agendamento.php" class="btn btn-gold">
+        <a href="#" class="btn btn-gold">
             <i class="bi bi-plus-lg me-1"></i> Novo Agendamento
         </a>
     </main>
