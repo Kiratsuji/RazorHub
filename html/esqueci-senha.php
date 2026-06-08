@@ -78,7 +78,7 @@
             <?php if ($success): ?>
                 <div class="alert alert-success" role="alert">
                     Senha alterada com sucesso!
-                    <a href="dashboard.php" class="alert-link ms-1">Voltar ao início</a>
+                    <a href="inicio.php" class="alert-link ms-1">Voltar ao início</a>
                 </div>
             <?php else: ?>
 

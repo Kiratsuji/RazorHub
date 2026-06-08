@@ -3,7 +3,7 @@
 
     // Se já estiver logado, redireciona
     if (isset($_SESSION['user_id'])) {
-        header("Location: dashboard.php");
+        header("Location: inicio.php");
         exit();
     }
 
@@ -46,7 +46,7 @@
                     $upd = $pdo->prepare("UPDATE usuarios SET ultimo_login = NOW() WHERE id = :id");
                     $upd->execute(['id' => $user['id']]);
 
-                    header('Location: dashboard.php');
+                    header('Location: inicio.php');
                     exit();
                 }
 

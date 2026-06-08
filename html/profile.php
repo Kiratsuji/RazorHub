@@ -21,6 +21,56 @@ if (!$user) {
     exit();
 }
 
+// Função para validar telefone brasileiro
+function validarTelefone($telefone) {
+    // Remove caracteres não numéricos
+    $telefone = preg_replace('/[^0-9]/', '', $telefone);
+    
+    // Verifica se tem 10 ou 11 dígitos (com ou sem 9º dígito)
+    return strlen($telefone) === 10 || strlen($telefone) === 11;
+}
+
+// Função para formatar telefone automaticamente
+function formatarTelefone($telefone) {
+    $telefone = preg_replace('/[^0-9]/', '', $telefone);
+    
+    if (strlen($telefone) === 11) {
+        return preg_replace('/(\d{2})(\d{5})(\d{4})/', '($1) $2-$3', $telefone);
+    } elseif (strlen($telefone) === 10) {
+        return preg_replace('/(\d{2})(\d{4})(\d{4})/', '($1) $2-$3', $telefone);
+    }
+    return $telefone;
+}
+
+// Função para gerar username automático
+function gerarUsername($nome, $sobrenome, $pdo, $user_id = null) {
+    $base = strtolower(trim($nome . '.' . $sobrenome));
+    $base = preg_replace('/[^a-z0-9.]/', '', $base);
+    $username = $base;
+    $counter = 1;
+    
+    // Verifica se o username já existe (excluindo o usuário atual)
+    $sql = "SELECT COUNT(*) FROM usuarios WHERE username = :username";
+    $params = ['username' => $username];
+    
+    if ($user_id) {
+        $sql .= " AND id != :user_id";
+        $params['user_id'] = $user_id;
+    }
+    
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    
+    while ($stmt->fetchColumn() > 0) {
+        $username = $base . $counter;
+        $params['username'] = $username;
+        $stmt->execute($params);
+        $counter++;
+    }
+    
+    return $username;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
 
@@ -32,12 +82,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $telefone  = trim($_POST['telefone']  ?? '');
         $username  = trim($_POST['username']  ?? '') ?: null;
 
-        if (empty($nome) || empty($sobrenome) || empty($email)) {
-            $error = "Nome, sobrenome e e-mail são obrigatórios.";
+        // Validações aprimoradas
+        $errors = [];
+
+        if (empty($nome)) {
+            $errors[] = "O nome é obrigatório.";
+        } elseif (strlen($nome) < 2) {
+            $errors[] = "O nome deve ter pelo menos 2 caracteres.";
+        }
+
+        if (empty($sobrenome)) {
+            $errors[] = "O sobrenome é obrigatório.";
+        } elseif (strlen($sobrenome) < 2) {
+            $errors[] = "O sobrenome deve ter pelo menos 2 caracteres.";
+        }
+
+        if (empty($email)) {
+            $errors[] = "O e-mail é obrigatório.";
         } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $error = "Informe um e-mail válido.";
+            $errors[] = "Informe um e-mail válido.";
+        }
+
+        if (!empty($telefone) && !validarTelefone($telefone)) {
+            $errors[] = "Informe um telefone válido (formato: (99) 99999-9999 ou (99) 9999-9999).";
+        }
+
+        // Limpa e formata o telefone para salvar no banco
+        if (!empty($telefone)) {
+            $telefone = preg_replace('/[^0-9]/', '', $telefone);
         } else {
+            $telefone = null;
+        }
+
+        if (empty($errors)) {
             try {
+                // Se username não foi preenchido, gera automaticamente
+                if (empty($username)) {
+                    $username = gerarUsername($nome, $sobrenome, $pdo, $user_id);
+                }
+
                 $upd = $pdo->prepare("
                     UPDATE usuarios
                     SET nome = :nome, sobrenome = :sobrenome,
@@ -48,7 +131,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'nome'      => $nome,
                     'sobrenome' => $sobrenome,
                     'email'     => $email,
-                    'telefone'  => $telefone ?: null,
+                    'telefone'  => $telefone,
                     'username'  => $username,
                     'id'        => $user_id,
                 ]);
@@ -62,10 +145,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $success = "Perfil atualizado com sucesso!";
 
             } catch (PDOException $e) {
-                $error = ($e->getCode() === '23000')
-                    ? "Este e-mail ou nome de usuário já está em uso."
-                    : "Erro ao atualizar perfil. Tente novamente.";
+                if ($e->getCode() === '23000') {
+                    if (strpos($e->getMessage(), 'email') !== false) {
+                        $error = "Este e-mail já está em uso por outro usuário.";
+                    } elseif (strpos($e->getMessage(), 'username') !== false) {
+                        $error = "Este nome de usuário já está em uso. Tente outro.";
+                    } else {
+                        $error = "Já existe um registro com estas informações.";
+                    }
+                } else {
+                    $error = "Erro ao atualizar perfil. Tente novamente.";
+                }
             }
+        } else {
+            $error = implode(" ", $errors);
         }
 
     // ── Alterar senha ──────────────────────────────────────────
@@ -74,25 +167,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $nova_senha      = $_POST['novaSenha']          ?? '';
         $confirmar_senha = $_POST['confirmarNovaSenha'] ?? '';
 
-        if (empty($senha_atual) || empty($nova_senha) || empty($confirmar_senha)) {
-            $error = "Preencha todos os campos de senha.";
+        $errors = [];
+
+        if (empty($senha_atual)) {
+            $errors[] = "A senha atual é obrigatória.";
+        }
+
+        if (empty($nova_senha)) {
+            $errors[] = "A nova senha é obrigatória.";
         } elseif (strlen($nova_senha) < 8) {
-            $error = "A nova senha deve ter no mínimo 8 caracteres.";
+            $errors[] = "A nova senha deve ter no mínimo 8 caracteres.";
+        } elseif (!preg_match('/[A-Z]/', $nova_senha)) {
+            $errors[] = "A nova senha deve conter pelo menos uma letra maiúscula.";
+        } elseif (!preg_match('/[a-z]/', $nova_senha)) {
+            $errors[] = "A nova senha deve conter pelo menos uma letra minúscula.";
+        } elseif (!preg_match('/[0-9]/', $nova_senha)) {
+            $errors[] = "A nova senha deve conter pelo menos um número.";
+        }
+
+        if (empty($confirmar_senha)) {
+            $errors[] = "A confirmação de senha é obrigatória.";
         } elseif ($nova_senha !== $confirmar_senha) {
-            $error = "As novas senhas não coincidem.";
-        } elseif (!password_verify($senha_atual, $user['password'])) {
-            $error = "Senha atual incorreta.";
+            $errors[] = "As novas senhas não coincidem.";
+        }
+
+        if (empty($errors)) {
+            if (!password_verify($senha_atual, $user['password'])) {
+                $error = "Senha atual incorreta.";
+            } else {
+                $hash = password_hash($nova_senha, PASSWORD_DEFAULT);
+                $upd  = $pdo->prepare("UPDATE usuarios SET password = :password WHERE id = :id");
+                $upd->execute(['password' => $hash, 'id' => $user_id]);
+                $success = "Senha alterada com sucesso!";
+            }
         } else {
-            $hash = password_hash($nova_senha, PASSWORD_DEFAULT);
-            $upd  = $pdo->prepare("UPDATE usuarios SET password = :password WHERE id = :id");
-            $upd->execute(['password' => $hash, 'id' => $user_id]);
-            $success = "Senha alterada com sucesso!";
+            $error = implode(" ", $errors);
         }
     }
 }
 
 $nome    = $_SESSION['nome'];
 $inicial = mb_strtoupper(mb_substr($nome, 0, 1));
+
+// Formata o telefone para exibição
+$telefone_formatado = !empty($user['telefone']) ? formatarTelefone($user['telefone']) : '';
 ?>
 <!doctype html>
 <html lang="pt-BR" data-bs-theme="dark">
@@ -112,113 +230,8 @@ $inicial = mb_strtoupper(mb_substr($nome, 0, 1));
     <link rel="apple-touch-icon" sizes="180x180" href="assets/images/favicon/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-title" content="RazorHub" />
     <link rel="manifest" href="assets/images/favicon/site.webmanifest" />
-
-    <style>
-        /* ── Layout base ── */
-        body { display: flex; flex-direction: column; min-height: 100vh; }
-
-        /* ── Navbar ── */
-        .rh-navbar {
-            position: fixed; top: 0; left: 0; right: 0; height: 64px;
-            z-index: 1040; display: flex; align-items: center;
-            padding: 0 1.5rem; justify-content: space-between;
-            border-bottom: 1px solid rgba(255,255,255,.07);
-            background: var(--bs-body-bg, #111);
-        }
-        .rh-navbar .navbar-brand {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 1.6rem; letter-spacing: .08em;
-        }
-        .sidebar-toggle {
-            display: none; background: none; border: none;
-            color: inherit; font-size: 1.4rem;
-            padding: 0 .5rem 0 0; cursor: pointer;
-        }
-        .rh-user {
-            display: flex; align-items: center; gap: .65rem;
-            text-decoration: none; color: inherit;
-        }
-        .rh-avatar {
-            width: 38px; height: 38px; border-radius: 50%;
-            background: #c9a84c; color: #111;
-            font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem;
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0; border: 2px solid rgba(201,168,76,.4);
-        }
-        .rh-user-name {
-            font-family: 'Barlow', sans-serif;
-            font-weight: 600; font-size: .9rem; white-space: nowrap;
-        }
-
-        /* ── Sidebar ── */
-        .rh-sidebar {
-            position: fixed; top: 64px; left: 0; bottom: 0; width: 220px;
-            background: var(--bs-body-bg, #111);
-            border-right: 1px solid rgba(255,255,255,.07);
-            padding: 1.5rem 0; z-index: 1030;
-            display: flex; flex-direction: column;
-            transition: transform .25s ease;
-        }
-        .rh-sidebar .nav-link {
-            display: flex; align-items: center; gap: .75rem;
-            padding: .7rem 1.5rem;
-            font-family: 'Barlow', sans-serif; font-weight: 600; font-size: .9rem;
-            color: rgba(255,255,255,.55);
-            border-left: 3px solid transparent;
-            transition: color .2s, border-color .2s, background .2s;
-            text-decoration: none;
-        }
-        .rh-sidebar .nav-link i { font-size: 1.1rem; }
-        .rh-sidebar .nav-link:hover { color: #fff; background: rgba(255,255,255,.05); }
-        .rh-sidebar .nav-link.active {
-            color: #c9a84c; border-left-color: #c9a84c;
-            background: rgba(201,168,76,.07);
-        }
-        .rh-sidebar-footer {
-            margin-top: auto; padding: 1rem 1.5rem;
-            border-top: 1px solid rgba(255,255,255,.07);
-        }
-        .rh-sidebar-footer a {
-            display: flex; align-items: center; gap: .65rem;
-            font-family: 'Barlow', sans-serif; font-weight: 600; font-size: .85rem;
-            color: rgba(255,255,255,.4); text-decoration: none; transition: color .2s;
-        }
-        .rh-sidebar-footer a:hover { color: #e05c5c; }
-
-        /* ── Wrapper + footer ── */
-        .rh-wrapper {
-            margin-top: 64px; margin-left: 220px; flex: 1; padding: 2rem;
-            transition: margin-left .25s ease;
-        }
-        footer { margin-left: 220px; border-top: 1px solid rgba(255,255,255,.07); transition: margin-left .25s ease; }
-
-        /* ── Overlay mobile ── */
-        .sidebar-overlay {
-            display: none; position: fixed; inset: 0;
-            background: rgba(0,0,0,.5); z-index: 1025;
-        }
-
-        /* ── Seções do perfil ── */
-        .profile-section {
-            max-width: 560px;
-            padding-bottom: 2rem;
-            margin-bottom: 2rem;
-            border-bottom: 1px solid rgba(255,255,255,.07);
-        }
-        .profile-section:last-child { border-bottom: none; }
-
-        /* ── Responsivo ── */
-        @media (max-width: 768px) {
-            .sidebar-toggle { display: block; }
-            .rh-sidebar { transform: translateX(-100%); }
-            .rh-sidebar.open { transform: translateX(0); }
-            .sidebar-overlay.open { display: block; }
-            .rh-wrapper, footer { margin-left: 0; }
-            .rh-user-name { display: none; }
-        }
-    </style>
 </head>
-<body>
+<body class="has-sidebar">
 
     <!-- ── Navbar ── -->
     <header class="rh-navbar">
@@ -261,6 +274,7 @@ $inicial = mb_strtoupper(mb_substr($nome, 0, 1));
 
         <?php if ($success): ?>
             <div class="alert alert-success alert-dismissible fade show" role="alert" style="max-width:560px">
+                <i class="bi bi-check-circle-fill me-2"></i>
                 <?= htmlspecialchars($success) ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
@@ -268,6 +282,7 @@ $inicial = mb_strtoupper(mb_substr($nome, 0, 1));
 
         <?php if ($error): ?>
             <div class="alert alert-danger alert-dismissible fade show" role="alert" style="max-width:560px">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
                 <?= htmlspecialchars($error) ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
@@ -297,11 +312,11 @@ $inicial = mb_strtoupper(mb_substr($nome, 0, 1));
                     <input type="text" class="form-control" id="username" name="username"
                         placeholder="Ex: joaosilva"
                         value="<?= htmlspecialchars($user['username'] ?? '') ?>" />
-                    <div class="form-text">Esse nome aparecerá para nossos funcionários.</div>
+                    <div class="form-text">Este nome aparecerá para nossos funcionários. Deixe em branco para gerar automaticamente.</div>
                     <div class="mb-2 mt-2 form-check">
                         <input type="checkbox" class="form-check-input" id="usernameCheck" />
                         <label class="form-check-label" for="usernameCheck">
-                            Utilizar meu nome e sobrenome
+                            Utilizar meu nome e sobrenome como nome de usuário
                         </label>
                     </div>
                 </div>
@@ -309,8 +324,9 @@ $inicial = mb_strtoupper(mb_substr($nome, 0, 1));
                 <div class="mb-3">
                     <label for="telefone" class="form-label">Telefone</label>
                     <input type="tel" class="form-control" id="telefone" name="telefone"
-                        placeholder="(31) 9 1234-5678"
-                        value="<?= htmlspecialchars($user['telefone'] ?? '') ?>" />
+                        placeholder="(99) 99999-9999"
+                        value="<?= htmlspecialchars($telefone_formatado) ?>" />
+                    <div class="form-text">Formato: (DDD) 99999-9999 ou (DDD) 9999-9999</div>
                 </div>
             </section>
 
@@ -332,23 +348,30 @@ $inicial = mb_strtoupper(mb_substr($nome, 0, 1));
                 <div class="mb-3">
                     <label for="nome" class="form-label">Nome</label>
                     <input type="text" class="form-control" id="nome" name="nome" required
+                        placeholder="Seu nome"
                         value="<?= htmlspecialchars($user['nome']) ?>" />
+                    <div class="form-text">Mínimo de 2 caracteres.</div>
                 </div>
 
                 <div class="mb-3">
                     <label for="sobrenome" class="form-label">Sobrenome</label>
                     <input type="text" class="form-control" id="sobrenome" name="sobrenome" required
+                        placeholder="Seu sobrenome"
                         value="<?= htmlspecialchars($user['sobrenome']) ?>" />
+                    <div class="form-text">Mínimo de 2 caracteres.</div>
                 </div>
 
                 <div class="mb-3">
                     <label for="email" class="form-label">E-mail</label>
                     <input type="email" class="form-control" id="email" name="email" required
+                        placeholder="seu@email.com"
                         value="<?= htmlspecialchars($user['email']) ?>" />
                     <div class="form-text">Não compartilhamos seu e-mail com ninguém.</div>
                 </div>
 
-                <button type="submit" class="btn btn-gold">Salvar alterações</button>
+                <button type="submit" class="btn btn-gold">
+                    <i class="bi bi-save me-1"></i> Salvar alterações
+                </button>
             </section>
         </form>
 
@@ -359,11 +382,16 @@ $inicial = mb_strtoupper(mb_substr($nome, 0, 1));
             <section class="profile-section">
                 <h1 class="h2-title mb-4">ZONA DE <span>PERIGO</span></h1>
 
+                <div class="alert alert-warning mb-4" style="font-size:0.9rem">
+                    <i class="bi bi-shield-exclamation me-2"></i>
+                    A senha deve ter no mínimo 8 caracteres, incluindo letras maiúsculas, minúsculas e números.
+                </div>
+
                 <div class="mb-3">
                     <label for="senhaAtual" class="form-label">Senha Atual</label>
                     <div class="input-group">
                         <input type="password" class="form-control" id="senhaAtual" name="senhaAtual"
-                            autocomplete="current-password" />
+                            autocomplete="current-password" placeholder="Digite sua senha atual" />
                         <button type="button" class="btn btn-outline-secondary toggle-senha"
                             data-target="senhaAtual" tabindex="-1">
                             <i class="bi bi-eye"></i>
@@ -381,6 +409,7 @@ $inicial = mb_strtoupper(mb_substr($nome, 0, 1));
                             <i class="bi bi-eye"></i>
                         </button>
                     </div>
+                    <div class="form-text" id="senhaFeedback"></div>
                 </div>
 
                 <div class="mb-4">
@@ -396,7 +425,9 @@ $inicial = mb_strtoupper(mb_substr($nome, 0, 1));
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-danger">Alterar senha</button>
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-key me-1"></i> Alterar senha
+                </button>
             </section>
         </form>
 
@@ -437,30 +468,91 @@ $inicial = mb_strtoupper(mb_substr($nome, 0, 1));
             });
         });
 
+        // ── Formatação automática de telefone ────────────────────
+        const telefoneInput = document.getElementById('telefone');
+        if (telefoneInput) {
+            telefoneInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                
+                if (value.length > 11) {
+                    value = value.slice(0, 11);
+                }
+                
+                if (value.length > 10) {
+                    value = value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+                } else if (value.length > 6) {
+                    value = value.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+                } else if (value.length > 2) {
+                    value = value.replace(/(\d{2})(\d{0,5})/, '($1) $2');
+                } else if (value.length > 0) {
+                    value = value.replace(/(\d{0,2})/, '($1');
+                }
+                
+                e.target.value = value;
+            });
+        }
+
+        // ── Validação de senha em tempo real ─────────────────────
+        const novaSenha = document.getElementById('novaSenha');
+        const senhaFeedback = document.getElementById('senhaFeedback');
+        
+        if (novaSenha && senhaFeedback) {
+            novaSenha.addEventListener('input', function() {
+                const senha = this.value;
+                let feedback = '';
+                let isValid = true;
+                
+                if (senha.length > 0 && senha.length < 8) {
+                    feedback = '❌ A senha deve ter no mínimo 8 caracteres';
+                    isValid = false;
+                } else if (senha.length >= 8) {
+                    if (!/[A-Z]/.test(senha)) {
+                        feedback = '❌ A senha deve conter pelo menos uma letra maiúscula';
+                        isValid = false;
+                    } else if (!/[a-z]/.test(senha)) {
+                        feedback = '❌ A senha deve conter pelo menos uma letra minúscula';
+                        isValid = false;
+                    } else if (!/[0-9]/.test(senha)) {
+                        feedback = '❌ A senha deve conter pelo menos um número';
+                        isValid = false;
+                    } else {
+                        feedback = '✅ Senha forte!';
+                        isValid = true;
+                    }
+                }
+                
+                senhaFeedback.innerHTML = feedback;
+                senhaFeedback.className = isValid && senha.length >= 8 ? 'form-text text-success' : 'form-text text-danger';
+            });
+        }
+
         // ── Checkbox "usar nome e sobrenome" ─────────────────────
         const check     = document.getElementById('usernameCheck');
         const usernameInput = document.getElementById('username');
         const nomeInput     = document.getElementById('nome');
         const sobrenomeInput = document.getElementById('sobrenome');
 
-        check.addEventListener('change', () => {
-            if (check.checked) {
-                const full = (nomeInput.value.trim() + ' ' + sobrenomeInput.value.trim()).trim();
-                usernameInput.value    = full;
-                usernameInput.readOnly = true;
-            } else {
-                usernameInput.readOnly = false;
-            }
-        });
-
-        // Atualiza username em tempo real enquanto checkbox está marcado
-        [nomeInput, sobrenomeInput].forEach(el => {
-            el.addEventListener('input', () => {
+        if (check && usernameInput && nomeInput && sobrenomeInput) {
+            check.addEventListener('change', () => {
                 if (check.checked) {
-                    usernameInput.value = (nomeInput.value.trim() + ' ' + sobrenomeInput.value.trim()).trim();
+                    const full = (nomeInput.value.trim() + ' ' + sobrenomeInput.value.trim()).trim().toLowerCase().replace(/\s+/g, '.');
+                    usernameInput.value    = full;
+                    usernameInput.readOnly = true;
+                } else {
+                    usernameInput.readOnly = false;
                 }
             });
-        });
+
+            // Atualiza username em tempo real enquanto checkbox está marcado
+            [nomeInput, sobrenomeInput].forEach(el => {
+                el.addEventListener('input', () => {
+                    if (check.checked) {
+                        const full = (nomeInput.value.trim() + ' ' + sobrenomeInput.value.trim()).trim().toLowerCase().replace(/\s+/g, '.');
+                        usernameInput.value = full;
+                    }
+                });
+            });
+        }
     </script>
 </body>
 </html>

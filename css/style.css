@@ -17,6 +17,21 @@ body {
   flex-direction: column;
 }
 
+/* Footer padrão (sem sidebar) */
+footer {
+  background-color: #080808;
+  border-top: 1px solid var(--rh-border);
+  margin-top: auto; /* Empurra o footer para baixo */
+  width: 100%;
+}
+
+/* Footer específico para páginas com sidebar */
+.has-sidebar footer {
+  margin-left: 220px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  transition: margin-left 0.25s ease;
+}
+
 .navbar {
   background-color: rgba(13, 13, 13, 0.92) !important;
   border-bottom: 1px solid var(--rh-border);
@@ -185,17 +200,22 @@ body {
   color: #f0ece0;
 }
 
+/* Footer normal (sem sidebar) */
 footer {
   background-color: #080808;
   border-top: 1px solid var(--rh-border);
+  margin-top: auto;
+  width: 100%;
 }
-.footer-brand {
+
+footer .footer-brand {
   font-family: "Bebas Neue", sans-serif;
   font-size: 1.6rem;
   letter-spacing: 0.1em;
   color: var(--rh-gold);
 }
-.footer-copy {
+
+footer .footer-copy {
   font-size: 0.8rem;
   color: #4a4840;
   letter-spacing: 0.04em;
@@ -502,8 +522,163 @@ footer {
   background-color: rgba(201, 168, 76, 0.15);
 }
 
-/* ────────────────────────────────────── PROFILE PAGE ─────────────────────────────────────── */
+/* ────────────── ESTILOS COMPARTILHADOS ENTRE INÍCIO E PERFIL ────────────── */
 
+/* Layout base para páginas com navbar fixa e sidebar */
+.rh-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  z-index: 1040;
+  display: flex;
+  align-items: center;
+  padding: 0 1.5rem;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  background: var(--bs-body-bg, #111);
+}
+
+.rh-navbar .navbar-brand {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 1.6rem;
+  letter-spacing: 0.08em;
+}
+
+/* Botão hamburguer (mobile) */
+.sidebar-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 1.4rem;
+  padding: 0 0.5rem 0 0;
+  cursor: pointer;
+}
+
+/* Avatar + nome do usuário */
+.rh-user {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.rh-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #c9a84c;
+  color: #111;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 2px solid rgba(201, 168, 76, 0.4);
+}
+
+.rh-user-name {
+  font-family: "Barlow", sans-serif;
+  font-weight: 600;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+/* Sidebar */
+.rh-sidebar {
+  position: fixed;
+  top: 64px;
+  left: 0;
+  bottom: 0;
+  width: 220px;
+  background: var(--bs-body-bg, #111);
+  border-right: 1px solid rgba(255, 255, 255, 0.07);
+  padding: 1.5rem 0;
+  z-index: 1030;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.25s ease;
+}
+
+.rh-sidebar .nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 1.5rem;
+  font-family: "Barlow", sans-serif;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.55);
+  border-left: 3px solid transparent;
+  transition:
+    color 0.2s,
+    border-color 0.2s,
+    background 0.2s;
+  text-decoration: none;
+}
+
+.rh-sidebar .nav-link i {
+  font-size: 1.1rem;
+}
+
+.rh-sidebar .nav-link:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.rh-sidebar .nav-link.active {
+  color: #c9a84c;
+  border-left-color: #c9a84c;
+  background: rgba(201, 168, 76, 0.07);
+}
+
+/* Logout no rodapé da sidebar */
+.rh-sidebar-footer {
+  margin-top: auto;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.rh-sidebar-footer a {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-family: "Barlow", sans-serif;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.4);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.rh-sidebar-footer a:hover {
+  color: #e05c5c;
+}
+
+/* Conteúdo principal */
+.rh-wrapper {
+  margin-top: 64px;
+  margin-left: 220px;
+  flex: 1;
+  padding: 2rem;
+  transition: margin-left 0.25s ease;
+  min-height: calc(100vh - 64px);
+}
+
+/* Overlay mobile */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1025;
+}
+
+/* ────────────── ESTILOS EXCLUSIVOS DA PÁGINA DE PERFIL ────────────── */
 .h2-title {
   font-family: "Bebas Neue", sans-serif;
   font-size: clamp(2rem, 4vw, 3rem);
@@ -511,12 +686,50 @@ footer {
   letter-spacing: 0.1rem;
   color: #f0ece0;
 }
+
 .h2-title span {
   color: var(--rh-gold);
 }
 
 .profile-section {
-  padding-bottom: 1rem;
+  max-width: 560px;
+  padding-bottom: 2rem;
   margin-bottom: 2rem;
-  border-bottom: 1px solid var(--rh-border);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.profile-section:last-child {
+  border-bottom: none;
+}
+
+/* ────────────── RESPONSIVIDADE ────────────── */
+@media (max-width: 768px) {
+  .sidebar-toggle {
+    display: block;
+  }
+
+  .rh-sidebar {
+    transform: translateX(-100%);
+  }
+
+  .rh-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .sidebar-overlay.open {
+    display: block;
+  }
+
+  .rh-wrapper {
+    margin-left: 0;
+  }
+
+  /* Footer responsivo para sidebar */
+  .has-sidebar footer {
+    margin-left: 0;
+  }
+
+  .rh-user-name {
+    display: none;
+  }
 }

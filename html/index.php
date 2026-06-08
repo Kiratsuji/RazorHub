@@ -1,9 +1,9 @@
 <?php
     require_once("config/database.php");
    
-    //Se já estiver logado, redirecione ao dashboard(Tela inicial pós login)
+    //Se já estiver logado, redirecione a tela inicial
     if (isset($_SESSION["user_id"])) {
-        header("Location: dashboard.php");
+        header("Location: inicio.php");
         exit();
     }
 ?>
